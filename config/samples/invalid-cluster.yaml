@@ -1,0 +1,11 @@
+apiVersion: infrastructure.capi.demo/v1alpha1
+kind: ClusterRequest
+metadata:
+  name: bad-cluster
+  namespace: default
+spec:
+  version: "1.29"          # should fail — pattern requires x.y.z
+  controlPlane:
+    replicas: 2             # should fail — only 1 or 3 allowed
+    machineType: xlarge     # should fail — not in enum
+  workers: []              # should fail — minItems=1

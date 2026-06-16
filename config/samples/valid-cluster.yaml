@@ -1,0 +1,14 @@
+apiVersion: infrastructure.capi.demo/v1alpha1
+kind: ClusterRequest
+metadata:
+  name: my-first-cluster
+  namespace: default
+spec:
+  version: "1.34.8"
+  controlPlane:
+    replicas: 3
+    machineType: medium
+  workers:
+    - name: worker-pool-1
+      replicas: 2
+      machineType: small
