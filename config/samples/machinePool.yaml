@@ -1,0 +1,11 @@
+apiVersion: infrastructure.capi.demo/v1alpha1
+kind: MachinePool
+metadata:
+  name: test-pool
+  namespace: default
+spec:
+  clusterName: my-first-cluster
+  replicas: 3
+  machineType: small
+  machineImage: ubuntu
+  availabilityZone: eu-de-1
