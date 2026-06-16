@@ -18,4 +18,13 @@ resources:
   kind: ClusterRequest
   path: github.com/moto999999/capi-demo-operator/api/v1alpha1
   version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: capi.demo
+  group: infrastructure
+  kind: MachinePool
+  path: github.com/moto999999/capi-demo-operator/api/v1alpha1
+  version: v1alpha1
 version: "3"

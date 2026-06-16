@@ -22,6 +22,9 @@ resources:
 # default, aiding admins in cluster management. Those roles are
 # not used by the capi-demo-operator itself. You can comment the following lines
 # if you do not want those helpers be installed with your Project.
+- machinepool_admin_role.yaml
+- machinepool_editor_role.yaml
+- machinepool_viewer_role.yaml
 - clusterrequest_admin_role.yaml
 - clusterrequest_editor_role.yaml
 - clusterrequest_viewer_role.yaml
