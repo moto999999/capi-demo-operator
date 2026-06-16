@@ -4,20 +4,20 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.21.0
-  name: clusterrequests.infrastructure.capi.demo
+  name: machinepools.infrastructure.capi.demo
 spec:
   group: infrastructure.capi.demo
   names:
-    kind: ClusterRequest
-    listKind: ClusterRequestList
-    plural: clusterrequests
-    singular: clusterrequest
+    kind: MachinePool
+    listKind: MachinePoolList
+    plural: machinepools
+    singular: machinepool
   scope: Namespaced
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: ClusterRequest is the Schema for the clusterrequests API
+        description: MachinePool is the Schema for the machinepools API
         properties:
           apiVersion:
             description: |-
@@ -37,91 +37,51 @@ spec:
           metadata:
             type: object
           spec:
-            description: spec defines the desired state of ClusterRequest
+            description: spec defines the desired state of MachinePool
             properties:
-              controlPlane:
-                description: |-
-                  ControlPlane describes the control plane configuration
-                  Similar to ControlPlaneMachineSet in OCP
-                properties:
-                  machineType:
-                    description: MachineType is a fake "instance type" — like AWS
-                      m5.xlarge in IPI
-                    enum:
-                    - small
-                    - medium
-                    - large
-                    type: string
-                  replicas:
-                    description: Replicas is always 1 or 3 in real clusters (etcd
-                      quorum)
-                    enum:
-                    - 1
-                    - 3
-                    format: int32
-                    type: integer
-                required:
-                - machineType
-                - replicas
-                type: object
-              version:
-                description: |-
-                  Version is the Kubernetes version for this cluster
-                  e.g. "1.34.3" — like ClusterVersion in OCP
-                pattern: ^\d+\.\d+\.\d+$
+              availabilityZone:
+                description: AvailabilityZone is where the pool lives in the cloud
                 type: string
-              workers:
-                description: |-
-                  Workers describes the worker machine pools
-                  Similar to MachineSets in OCP — we can have multiple worker machine pools, each with its own configuration
-                items:
-                  description: MachinePoolSpec defines the desired state of MachinePool
-                  properties:
-                    availabilityZone:
-                      description: AvailabilityZone is where the pool lives in the
-                        cloud
-                      type: string
-                    clusterName:
-                      description: ClusterName references the parent ClusterRequest
-                      type: string
-                    machineImage:
-                      description: MachineImage is the OS image to use for this pool
-                      enum:
-                      - ubuntu
-                      - rhel
-                      type: string
-                    machineType:
-                      description: MachineType is the instance size
-                      enum:
-                      - small
-                      - medium
-                      - large
-                      type: string
-                    replicas:
-                      default: 1
-                      description: Replicas is the desired number of instances in
-                        the pool
-                      format: int32
-                      type: integer
-                  required:
-                  - availabilityZone
-                  - clusterName
-                  - machineImage
-                  - machineType
-                  - replicas
-                  type: object
-                minItems: 1
-                type: array
+              clusterName:
+                description: ClusterName references the parent ClusterRequest
+                type: string
+              machineImage:
+                description: MachineImage is the OS image to use for this pool
+                enum:
+                - ubuntu
+                - rhel
+                type: string
+              machineType:
+                description: MachineType is the instance size
+                enum:
+                - small
+                - medium
+                - large
+                type: string
+              replicas:
+                default: 1
+                description: Replicas is the desired number of instances in the pool
+                format: int32
+                type: integer
             required:
-            - controlPlane
-            - version
-            - workers
+            - availabilityZone
+            - clusterName
+            - machineImage
+            - machineType
+            - replicas
             type: object
           status:
-            description: status defines the observed state of ClusterRequest
+            description: status defines the observed state of MachinePool
             properties:
+              addresses:
+                description: |-
+                  Addresses are the IPs of instances in the pool
+                  Like Machine.status.addresses in OCP
+                items:
+                  type: string
+                type: array
               conditions:
-                description: Conditions is the standard Kubernetes conditions array
+                description: Conditions is the standard conditions array
                 items:
                   description: Condition contains details for one aspect of the current
                     state of this API Resource.
@@ -180,14 +140,13 @@ spec:
                 x-kubernetes-list-map-keys:
                 - type
                 x-kubernetes-list-type: map
-              controlPlaneReady:
-                description: ControlPlaneReady mirrors what you see on Cluster.status.controlPlaneReady
-                  in CAPI
-                type: boolean
-              phase:
+              networkID:
                 description: |-
-                  Phase is the high-level lifecycle state
-                  Similar to the "phase" field on a Machine object in OCP
+                  NetworkID is the cloud network this pool was placed in
+                  Like the networkName you see in vSphere providerSpec
+                type: string
+              phase:
+                description: Phase is the high-level lifecycle state
                 enum:
                 - Pending
                 - Provisioning
@@ -195,15 +154,13 @@ spec:
                 - Failed
                 - Deleting
                 type: string
-              readyWorkers:
+              providerID:
                 description: |-
-                  ReadyWorkers is how many worker Machines are Ready
-                  Similar to checking MachineSet .status.readyReplicas
-                format: int32
-                type: integer
-              totalWorkers:
-                description: TotalWorkers is the sum of desired replicas across all
-                  pools
+                  ProviderID is the cloud's native identifier for this server
+                  group (set AFTER cloud API responds)
+                type: string
+              readyReplicas:
+                description: ReadyReplicas is what the cloud reports as actually running
                 format: int32
                 type: integer
             type: object

@@ -51,19 +51,6 @@ type ControlPlaneSpec struct {
 	MachineType string `json:"machineType"`
 }
 
-type MachinePoolSpec struct {
-	// Name identifies this pool — like a MachineSet name in OCP
-	Name string `json:"name"`
-
-	// Replicas is the desired number of worker nodes
-	// +kubebuilder:default=1
-	Replicas int32 `json:"replicas"`
-
-	// MachineType is the fake instance type for workers
-	// +kubebuilder:validation:Enum=small;medium;large
-	MachineType string `json:"machineType"`
-}
-
 // ClusterRequestStatus defines the observed state of ClusterRequest.
 type ClusterRequestStatus struct {
 	// Phase is the high-level lifecycle state

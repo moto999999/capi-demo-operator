@@ -8,6 +8,7 @@ rules:
   - infrastructure.capi.demo
   resources:
   - clusterrequests
+  - machinepools
   verbs:
   - create
   - delete
@@ -20,12 +21,14 @@ rules:
   - infrastructure.capi.demo
   resources:
   - clusterrequests/finalizers
+  - machinepools/finalizers
   verbs:
   - update
 - apiGroups:
   - infrastructure.capi.demo
   resources:
   - clusterrequests/status
+  - machinepools/status
   verbs:
   - get
   - patch

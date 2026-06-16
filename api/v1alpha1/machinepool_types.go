@@ -26,33 +26,50 @@ import (
 
 // MachinePoolSpec defines the desired state of MachinePool
 type MachinePoolSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-	// The following markers will use OpenAPI v3 schema to validate the value
-	// More info: https://book.kubebuilder.io/reference/markers/crd-validation.html
+	// ClusterName references the parent ClusterRequest
+	ClusterName string `json:"clusterName"`
 
-	// foo is an example field of MachinePool. Edit machinepool_types.go to remove/update
-	// +optional
-	Foo *string `json:"foo,omitempty"`
+	// Replicas is the desired number of instances in the pool
+	// +kubebuilder:default=1
+	Replicas int32 `json:"replicas"`
+
+	// MachineType is the instance size
+	// +kubebuilder:validation:Enum=small;medium;large
+	MachineType string `json:"machineType"`
+
+	// MachineImage is the OS image to use for this pool
+	// +kubebuilder:validation:Enum=ubuntu;rhel
+	MachineImage string `json:"machineImage"`
+
+	// AvailabilityZone is where the pool lives in the cloud
+	AvailabilityZone string `json:"availabilityZone"`
 }
 
 // MachinePoolStatus defines the observed state of MachinePool.
 type MachinePoolStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// Phase is the high-level lifecycle state
+	// +kubebuilder:validation:Enum=Pending;Provisioning;Ready;Failed;Deleting
+	Phase string `json:"phase,omitempty"`
 
-	// For Kubernetes API conventions, see:
-	// https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties
+	// ProviderID is the cloud's native identifier for this server
+	// group (set AFTER cloud API responds)
+	// +optional
+	ProviderID string `json:"providerID,omitempty"`
 
-	// conditions represent the current state of the MachinePool resource.
-	// Each condition has a unique type and reflects the status of a specific aspect of the resource.
-	//
-	// Standard condition types include:
-	// - "Available": the resource is fully functional
-	// - "Progressing": the resource is being created or updated
-	// - "Degraded": the resource failed to reach or maintain its desired state
-	//
-	// The status of each condition is one of True, False, or Unknown.
+	// ReadyReplicas is what the cloud reports as actually running
+	ReadyReplicas int32 `json:"readyReplicas,omitempty"`
+
+	// NetworkID is the cloud network this pool was placed in
+	// Like the networkName you see in vSphere providerSpec
+	// +optional
+	NetworkID string `json:"networkID,omitempty"`
+
+	// Addresses are the IPs of instances in the pool
+	// Like Machine.status.addresses in OCP
+	// +optional
+	Addresses []string `json:"addresses,omitempty"`
+
+	// Conditions is the standard conditions array
 	// +listType=map
 	// +listMapKey=type
 	// +optional
