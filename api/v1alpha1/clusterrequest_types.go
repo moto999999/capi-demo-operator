@@ -26,33 +26,62 @@ import (
 
 // ClusterRequestSpec defines the desired state of ClusterRequest
 type ClusterRequestSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-	// The following markers will use OpenAPI v3 schema to validate the value
-	// More info: https://book.kubebuilder.io/reference/markers/crd-validation.html
+	// Version is the Kubernetes version for this cluster
+	// e.g. "1.34.3" — like ClusterVersion in OCP
+	// +kubebuilder:validation:Pattern=`^\d+\.\d+\.\d+$`
+	Version string `json:"version"`
 
-	// foo is an example field of ClusterRequest. Edit clusterrequest_types.go to remove/update
-	// +optional
-	Foo *string `json:"foo,omitempty"`
+	// ControlPlane describes the control plane configuration
+	// Similar to ControlPlaneMachineSet in OCP
+	ControlPlane ControlPlaneSpec `json:"controlPlane"`
+
+	// Workers describes the worker machine pools
+	// Similar to MachineSets in OCP — we can have multiple worker machine pools, each with its own configuration
+	// +kubebuilder:validation:MinItems=1
+	Workers []MachinePoolSpec `json:"workers"`
+}
+
+type ControlPlaneSpec struct {
+	// Replicas is always 1 or 3 in real clusters (etcd quorum)
+	// +kubebuilder:validation:Enum=1;3
+	Replicas int32 `json:"replicas"`
+
+	// MachineType is a fake "instance type" — like AWS m5.xlarge in IPI
+	// +kubebuilder:validation:Enum=small;medium;large
+	MachineType string `json:"machineType"`
+}
+
+type MachinePoolSpec struct {
+	// Name identifies this pool — like a MachineSet name in OCP
+	Name string `json:"name"`
+
+	// Replicas is the desired number of worker nodes
+	// +kubebuilder:default=1
+	Replicas int32 `json:"replicas"`
+
+	// MachineType is the fake instance type for workers
+	// +kubebuilder:validation:Enum=small;medium;large
+	MachineType string `json:"machineType"`
 }
 
 // ClusterRequestStatus defines the observed state of ClusterRequest.
 type ClusterRequestStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// Phase is the high-level lifecycle state
+	// Similar to the "phase" field on a Machine object in OCP
+	// +kubebuilder:validation:Enum=Pending;Provisioning;Ready;Failed;Deleting
+	Phase string `json:"phase,omitempty"`
 
-	// For Kubernetes API conventions, see:
-	// https://github.com/kubernetes/community/blob/master/contributors/devel/sig-architecture/api-conventions.md#typical-status-properties
+	// ControlPlaneReady mirrors what you see on Cluster.status.controlPlaneReady in CAPI
+	ControlPlaneReady bool `json:"controlPlaneReady,omitempty"`
 
-	// conditions represent the current state of the ClusterRequest resource.
-	// Each condition has a unique type and reflects the status of a specific aspect of the resource.
-	//
-	// Standard condition types include:
-	// - "Available": the resource is fully functional
-	// - "Progressing": the resource is being created or updated
-	// - "Degraded": the resource failed to reach or maintain its desired state
-	//
-	// The status of each condition is one of True, False, or Unknown.
+	// ReadyWorkers is how many worker Machines are Ready
+	// Similar to checking MachineSet .status.readyReplicas
+	ReadyWorkers int32 `json:"readyWorkers,omitempty"`
+
+	// TotalWorkers is the sum of desired replicas across all pools
+	TotalWorkers int32 `json:"totalWorkers,omitempty"`
+
+	// Conditions is the standard Kubernetes conditions array
 	// +listType=map
 	// +listMapKey=type
 	// +optional
